@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="UAH Motorsport (Formula Student): atenuador de impactos con honeycomb de aluminio simulado en ANSYS Mechanical y diseño de balancín y amortiguador de la suspensión.">
+  <title>Atenuador de impactos y suspensión en Formula Student — Jaime Prieto Gómez</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111c2d;
+      --panel-light: #172438;
+      --text: #f1f5f9;
+      --muted: #a9b7c9;
+      --line: #2b3a4f;
+      --accent: #a3e635;
+      --max-width: 1160px;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+    .container { width: min(var(--max-width), calc(100% - 48px)); margin-inline: auto; }
+    .eyebrow, .micro, .project-number, .nav-links, .brand small {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .eyebrow { color: var(--accent); font-size: .76rem; font-weight: 700; }
+    .muted { color: var(--muted); }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(11, 18, 32, .92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(148, 163, 184, .15);
+    }
+    .nav {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand { display: flex; align-items: center; font-weight: 750; letter-spacing: -.025em; }
+    .brand-name { display: block; font-size: 1rem; }
+    .brand small { display: block; margin-top: 1px; color: var(--muted); font-size: .62rem; font-weight: 500; letter-spacing: .08em; }
+    .nav-right { display: flex; align-items: center; gap: 30px; }
+    .nav-links { display: flex; gap: 26px; color: var(--muted); font-size: .72rem; }
+    .nav-links a:hover, .footer-links a:hover { color: var(--accent); }
+    .language {
+      border: 1px solid var(--line);
+      background: transparent; color: var(--text);
+      padding: 8px 10px; border-radius: 7px;
+      font: 700 .72rem "SFMono-Regular", Consolas, monospace;
+      cursor: pointer;
+    }
+
+    .hero { padding: 92px 0 88px; }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.02fr .98fr;
+      align-items: center;
+      gap: clamp(42px, 7vw, 92px);
+    }
+    h1 {
+      margin: 18px 0 20px;
+      font-size: clamp(2.8rem, 5.2vw, 5rem);
+      line-height: 1.03;
+      letter-spacing: -.055em;
+      max-width: 680px;
+    }
+    h1 span { color: var(--accent); }
+    .hero-keywords{margin:0 0 1.1rem;color:var(--accent);font-size:clamp(.9rem,1.4vw,1.05rem);font-weight:600;letter-spacing:.035em}
+    .hero-description { max-width: 570px; color: var(--muted); font-size: 1.04rem; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 46px; padding: 0 18px;
+      border-radius: 8px; font-size: .88rem; font-weight: 750;
+      border: 1px solid transparent; transition: transform .2s, background .2s, border-color .2s;
+    }
+    .button:hover { transform: translateY(-2px); }
+    .button-primary { background: var(--accent); color: #101827; }
+    .button-primary:hover { background: #b8f45a; }
+    .button-secondary { border-color: var(--line); color: var(--text); }
+    .button-secondary:hover { border-color: var(--muted); }
+
+    .visual-frame {
+      position: relative;
+      overflow: hidden;
+      min-height: 390px;
+      display: grid; place-items: center;
+      border: 1px solid #27374c;
+      border-radius: 18px;
+      background:
+        radial-gradient(ellipse at 54% 48%, rgba(42, 66, 91, .42), transparent 58%),
+        linear-gradient(145deg, #101b2c, #0b1220 72%);
+    }
+    .visual-frame::before {
+      content: ""; position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(148,163,184,.055) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(148,163,184,.055) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(to bottom, black, transparent 90%);
+      pointer-events: none;
+    }
+    .visual-label {
+      position: absolute; top: 18px; left: 20px;
+      color: var(--accent); font: 700 .68rem "SFMono-Regular", Consolas, monospace;
+      letter-spacing: .09em;
+    }
+    .visual-index {
+      position: absolute; top: 18px; right: 20px;
+      color: #8192a8; font: .68rem "SFMono-Regular", Consolas, monospace;
+    }
+    .visual-caption {
+      position: absolute; bottom: 18px; left: 20px; right: 20px;
+      display: flex; justify-content: space-between; gap: 16px;
+      color: #a9b7c9; font: .64rem "SFMono-Regular", Consolas, monospace;
+      letter-spacing: .05em; text-transform: uppercase;
+    }
+    .visual-caption span:last-child { color: var(--accent); }
+    .flow-art { position: relative; z-index: 1; width: 100%; max-width: 620px; padding: 28px 12px; }
+
+    section { scroll-margin-top: 90px; }
+    .section-heading {
+      display: flex; align-items: end; justify-content: space-between; gap: 24px;
+      margin-bottom: 28px;
+    }
+    h2 { margin: 8px 0 0; font-size: clamp(1.8rem, 3vw, 2.6rem); line-height: 1.15; letter-spacing: -.04em; }
+    .section-intro { color: var(--muted); max-width: 420px; margin: 0; font-size: .93rem; }
+    .projects { padding: 22px 0 100px; }
+    .project-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .project-card {
+      min-height: 270px; display: flex; flex-direction: column;
+      padding: 24px; border: 1px solid var(--line); border-radius: var(--radius);
+      background: linear-gradient(150deg, rgba(23,36,56,.82), rgba(17,28,45,.5));
+      transition: transform .2s, border-color .2s;
+    }
+    .project-card:hover { transform: translateY(-4px); border-color: #64748b; }
+    .project-top { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+    .project-number { color: var(--accent); font-size: .7rem; }
+    .project-tag { color: var(--muted); font: .65rem "SFMono-Regular", Consolas, monospace; text-align: right; }
+    .project-card h3 { margin: 34px 0 10px; font-size: 1.32rem; letter-spacing: -.025em; }
+    .project-card p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .project-bottom { margin-top: auto; padding-top: 26px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .tools { color: #d3dce8; font: .68rem "SFMono-Regular", Consolas, monospace; }
+    .arrow { color: var(--accent); font-size: 1.15rem; }
+
+    .about { padding: 0 0 100px; }
+    .about-panel {
+      display: grid; grid-template-columns: .75fr 1.25fr; gap: 52px;
+      padding: clamp(26px, 5vw, 52px); border-radius: 18px;
+      border: 1px solid var(--line); background: #0e1828;
+    }
+    .about-panel h2 { max-width: 300px; }
+    .about-copy { color: var(--muted); max-width: 650px; }
+    .about-copy p:first-child { margin-top: 0; }
+    .about-copy p:last-child { margin-bottom: 0; }
+    .about-details {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+      margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--line);
+    }
+    .about-detail { display: flex; flex-direction: column; gap: 5px; }
+    .about-detail .micro {
+      color: var(--accent); font-size: .65rem; font-weight: 700;
+      letter-spacing: .08em; margin-bottom: 3px;
+    }
+    .about-detail strong { color: var(--text); font-size: .84rem; font-weight: 650; }
+    .about-detail span:last-child { color: var(--muted); font-size: .78rem; }
+    .contact { padding: 0 0 74px; }
+    .contact-inner {
+      display: flex; justify-content: space-between; align-items: center; gap: 24px;
+      padding: 28px 0; border-top: 1px solid var(--line);
+    }
+    .contact-inner h2 { font-size: clamp(1.45rem, 2.8vw, 2rem); max-width: 560px; }
+    .contact-description { color: var(--muted); margin: 10px 0 0; max-width: 580px; }
+    .contact-copy { flex: 1; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 22px; color: var(--muted); font-size: .84rem; }
+    footer { border-top: 1px solid rgba(148,163,184,.13); padding: 20px 0 28px; color: #8192a8; font-size: .75rem; }
+    .footer-row { display: flex; justify-content: space-between; gap: 16px; }
+
+    @media (max-width: 850px) {
+      .nav-links { gap: 15px; }
+      .hero { padding-top: 66px; }
+      .hero-grid { grid-template-columns: 1fr; gap: 38px; }
+      .visual-frame { min-height: 340px; }
+      .project-grid { grid-template-columns: 1fr; }
+      .project-card { min-height: 230px; }
+      .project-card h3 { margin-top: 24px; }
+      .about-panel { grid-template-columns: 1fr; gap: 20px; }
+      .about-details { grid-template-columns: 1fr; gap: 18px; }
+    }
+    @media (max-width: 560px) {
+      .container { width: min(100% - 32px, var(--max-width)); }
+      .nav { min-height: 68px; }
+      .nav-right { gap: 12px; }
+      .nav-links { gap: 12px; font-size: .62rem; }
+      .nav-links a:nth-child(2) { display: none; }
+      .brand-name { font-size: .9rem; }
+      .hero { padding: 56px 0 64px; }
+      h1 { font-size: clamp(2.6rem, 12vw, 4rem); }
+      .hero-description { font-size: .96rem; }
+      .visual-frame { min-height: 270px; }
+      .section-heading { align-items: start; flex-direction: column; }
+      .projects { padding-bottom: 72px; }
+      .about { padding-bottom: 72px; }
+      .contact-inner { align-items: start; flex-direction: column; }
+      .footer-row { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  
+    /* ===== Página de proyecto ===== */
+    .back-link { color: var(--muted); font: .72rem "SFMono-Regular", Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+    .back-link:hover { color: var(--accent); }
+    .p-hero { padding: 72px 0 36px; }
+    .p-hero h1 span { color: inherit; }
+    .p-hero h1 { font-size: clamp(2rem, 4.2vw, 3.4rem); max-width: 900px; margin: 14px 0 12px; }
+    .p-subtitle { color: var(--accent); font-weight: 600; font-size: clamp(.95rem, 1.5vw, 1.1rem); margin: 0 0 18px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; padding: 0; list-style: none; }
+    .chips li { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; color: #d3dce8; font: .7rem "SFMono-Regular", Consolas, monospace; }
+    .p-summary { color: var(--muted); max-width: 720px; font-size: 1.04rem; margin: 0; }
+    .p-section { padding: 34px 0; border-top: 1px solid var(--line); }
+    .p-section:first-of-type { border-top: 0; }
+    .p-grid { display: grid; grid-template-columns: .55fr 1.45fr; gap: clamp(24px, 5vw, 64px); }
+    .p-section h2 { font-size: clamp(1.4rem, 2.4vw, 1.9rem); margin: 8px 0 0; }
+    .p-body { color: var(--muted); max-width: 760px; }
+    .p-body p { margin: 0 0 14px; }
+    .p-body p:last-child { margin-bottom: 0; }
+    .p-body h3 { color: var(--text); font-size: 1.05rem; letter-spacing: -.02em; margin: 30px 0 10px; }
+    .p-body h3:first-child { margin-top: 0; }
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 6px; font-size: .9rem; }
+    .data-table th, .data-table td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+    .data-table th { color: var(--accent); font: 700 .66rem "SFMono-Regular", Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+    .data-table td:first-child { color: var(--text); }
+    .table-wrap { overflow-x: auto; }
+    .table-note { color: #8192a8; font-size: .78rem; margin: 6px 0 0; }
+    .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0 0; padding: 0; list-style: none; counter-reset: step; }
+    .steps li { counter-increment: step; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(150deg, rgba(23,36,56,.82), rgba(17,28,45,.5)); }
+    .steps li::before { content: "0" counter(step); display: block; color: var(--accent); font: 700 .7rem "SFMono-Regular", Consolas, monospace; letter-spacing: .08em; margin-bottom: 8px; }
+    .steps strong { display: block; color: var(--text); margin-bottom: 6px; }
+    .steps span { font-size: .9rem; }
+    .figure-placeholder { margin: 22px 0 0; min-height: 180px; display: grid; place-items: center; text-align: center; padding: 18px; border: 1px dashed #3b4d66; border-radius: var(--radius); color: #8192a8; font: .72rem "SFMono-Regular", Consolas, monospace; letter-spacing: .05em; }
+    .check-note { margin: 14px 0 0; padding: 12px 14px; border: 1px dashed #b45309; border-radius: 10px; color: #fbbf24; font-size: .8rem; }
+    .plain-list { margin: 0; padding-left: 20px; }
+    .plain-list li { margin-bottom: 8px; }
+    .plain-list li:last-child { margin-bottom: 0; }
+    .link-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+    @media (max-width: 850px) {
+      .p-grid { grid-template-columns: 1fr; gap: 8px; }
+      .steps { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .p-hero { padding-top: 48px; }
+      .data-table { font-size: .82rem; }
+      .data-table th, .data-table td { padding: 8px 8px; }
+    }
+
+    .fig { margin: 0; }
+    .fig img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: var(--radius); background: #0d1626; }
+    .fig figcaption { margin-top: 8px; color: #8192a8; font-size: .78rem; }
+    .fig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
+    @media (max-width: 700px) { .fig-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand" href="index.html" aria-label="Jaime Prieto Gómez, inicio">
+        <span class="brand-name">Jaime Prieto Gómez<small data-es="CFD · SIMULACIÓN" data-en="CFD · SIMULATION">CFD · SIMULACIÓN</small></span>
+      </a>
+      <div class="nav-right">
+        <nav class="nav-links" aria-label="Navegación principal">
+          <a href="index.html#projects" data-es="Proyectos" data-en="Projects">Proyectos</a>
+          <a href="index.html#about" data-es="Perfil" data-en="Profile">Perfil</a>
+          <a href="index.html#contact" data-es="Contacto" data-en="Contact">Contacto</a>
+        </nav>
+        <button class="language" id="language-toggle" type="button" aria-label="Cambiar idioma">ES / EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="p-hero">
+      <div class="container">
+        <a class="back-link" href="index.html#projects"><span data-es="← Volver a proyectos" data-en="← Back to projects">← Volver a proyectos</span></a>
+        <div style="margin-top:28px"><span class="eyebrow">UAH Motorsport · 2021–2023</span></div>
+        <h1><span data-es="Atenuador de impactos y suspensión en Formula Student" data-en="Impact attenuator and suspension in Formula Student">Atenuador de impactos y suspensión en Formula Student</span></h1>
+        <p class="p-subtitle"><span data-es="Diseño y simulación de componentes sujetos a reglamento" data-en="Design and simulation of components subject to regulations">Diseño y simulación de componentes sujetos a reglamento</span></p>
+        <ul class="chips"><li>ANSYS Mechanical</li><li>Explicit Dynamics</li><li>Adams Car</li><li>SolidWorks</li><li>MATLAB</li></ul>
+        <p class="p-summary"><span data-es="Desarrollo de la primera versión del atenuador de impactos frontal del equipo, con estructura de honeycomb de aluminio, y participación en el diseño del balancín y del amortiguador de la suspensión, en el departamento de Chasis y Dinámica." data-en="Development of the first version of the team’s front impact attenuator, with an aluminium honeycomb structure, and participation in the design of the rocker and damper of the suspension, in the Chassis and Dynamics department.">Desarrollo de la primera versión del atenuador de impactos frontal del equipo, con estructura de honeycomb de aluminio, y participación en el diseño del balancín y del amortiguador de la suspensión, en el departamento de Chasis y Dinámica.</span></p>
+      </div>
+    </section>
+
+    <div class="container">
+      
+      <section class="p-section">
+        <div class="p-grid">
+          <div><span class="eyebrow" data-es="Contexto" data-en="Context">Contexto</span><h2><span data-es="El equipo en 2021" data-en="The team in 2021">El equipo en 2021</span></h2></div>
+          <div class="p-body"><p><span data-es="UAH Motorsport inició su actividad en el curso 2020/21. En septiembre de 2021, el equipo no disponía de un proceso definido de diseño geométrico, simulación ni documentación técnica para componentes sujetos al reglamento de Formula Student." data-en="UAH Motorsport started its activity in the 2020/21 academic year. In September 2021, the team had no defined process for geometric design, simulation or technical documentation of components subject to the Formula Student rules.">UAH Motorsport inició su actividad en el curso 2020/21. En septiembre de 2021, el equipo no disponía de un proceso definido de diseño geométrico, simulación ni documentación técnica para componentes sujetos al reglamento de Formula Student.</span></p></div>
+        </div>
+      </section>
+      
+      <section class="p-section">
+        <div class="p-grid">
+          <div><span class="eyebrow" data-es="Atenuador de impactos" data-en="Impact attenuator">Atenuador de impactos</span><h2><span data-es="Honeycomb de aluminio" data-en="Aluminium honeycomb">Honeycomb de aluminio</span></h2></div>
+          <div class="p-body"><h3><span data-es="Requisito normativo" data-en="Regulatory requirement">Requisito normativo</span></h3><p><span data-es="El equipo trabajó con la edición 2023 del reglamento, la prevista para su estreno en competición. Esta edición (T 3.19.1) exige absorber al menos 7 350 J en un impacto equivalente a 300 kg a 7 m/s, con una deceleración media ≤ 20 g y un pico ≤ 40 g." data-en="The team worked with the 2023 edition of the rules, the one targeted for its competition debut. This edition (T 3.19.1) requires absorbing at least 7,350 J in an impact equivalent to 300 kg at 7 m/s, with an average deceleration ≤ 20 g and a peak ≤ 40 g.">El equipo trabajó con la edición 2023 del reglamento, la prevista para su estreno en competición. Esta edición (T 3.19.1) exige absorber al menos 7 350 J en un impacto equivalente a 300 kg a 7 m/s, con una deceleración media ≤ 20 g y un pico ≤ 40 g.</span></p><h3><span data-es="Modelo numérico" data-en="Numerical model">Modelo numérico</span></h3><p><span data-es="Dinámica explícita en ANSYS Mechanical (solver AUTODYN, formulación lagrangiana). El honeycomb de aluminio se modeló celda a celda en láminas apiladas de ≈ 187 × 187 × 5 mm sobre la placa anti-intrusión (AIP). Contacto bonded entre la AIP y el atenuador, contacto sin fricción con formulación de penalización entre cuerpos, velocidad inicial impuesta y apoyos fijos. La iteración más completa alcanzó ≈ 188 000 elementos." data-en="Explicit dynamics in ANSYS Mechanical (AUTODYN solver, Lagrangian formulation). The aluminium honeycomb was modelled cell by cell in stacked sheets of ≈ 187 × 187 × 5 mm on the anti-intrusion plate (AIP). Bonded contact between the AIP and the attenuator, frictionless penalty-formulation contact between bodies, imposed initial velocity and fixed supports. The most complete iteration reached ≈ 188,000 elements.">Dinámica explícita en ANSYS Mechanical (solver AUTODYN, formulación lagrangiana). El honeycomb de aluminio se modeló celda a celda en láminas apiladas de ≈ 187 × 187 × 5 mm sobre la placa anti-intrusión (AIP). Contacto bonded entre la AIP y el atenuador, contacto sin fricción con formulación de penalización entre cuerpos, velocidad inicial impuesta y apoyos fijos. La iteración más completa alcanzó ≈ 188 000 elementos.</span></p><div class="fig-row"><figure class="fig"><img src="img/formula-modelo-intermedio.png" alt="Modelo de dinámica explícita con láminas de honeycomb apiladas entre dos placas" loading="lazy"><figcaption data-es="Versión intermedia del modelo: láminas de honeycomb apiladas entre dos placas." data-en="Intermediate model version: stacked honeycomb sheets between two plates.">Versión intermedia del modelo: láminas de honeycomb apiladas entre dos placas.</figcaption></figure><figure class="fig"><img src="img/formula-modelo-final1.png" alt="Modelo de dinámica explícita de la versión Final 1 con el bloque del atenuador entre dos placas" loading="lazy"><figcaption data-es="Versión «Final 1» del modelo (abril de 2022)." data-en="“Final 1” model version (April 2022).">Versión «Final 1» del modelo (abril de 2022).</figcaption></figure></div><h3><span data-es="Alcance" data-en="Scope">Alcance</span></h3><p><span data-es="Las iteraciones (de diciembre de 2021 a junio de 2022) se centraron en construir el modelo: tratamiento de contactos, estabilidad numérica y condiciones iniciales y de contorno. Todavía no reproducen el caso de homologación, por lo que no se presentan resultados de energía absorbida ni de deceleración." data-en="The iterations (from December 2021 to June 2022) focused on building the model: contact treatment, numerical stability, and initial and boundary conditions. They do not yet reproduce the homologation case, so no results for absorbed energy or deceleration are presented.">Las iteraciones (de diciembre de 2021 a junio de 2022) se centraron en construir el modelo: tratamiento de contactos, estabilidad numérica y condiciones iniciales y de contorno. Todavía no reproducen el caso de homologación, por lo que no se presentan resultados de energía absorbida ni de deceleración.</span></p><p><span data-es="Para verificar el cumplimiento haría falta imponer la masa y la velocidad del ensayo, incorporar un modelo de material con plasticidad y fallo para el aluminio y extraer la curva fuerza–desplazamiento y la energía absorbida." data-en="Verifying compliance would require imposing the test mass and velocity, adding a material model with plasticity and failure for the aluminium, and extracting the force–displacement curve and the absorbed energy.">Para verificar el cumplimiento haría falta imponer la masa y la velocidad del ensayo, incorporar un modelo de material con plasticidad y fallo para el aluminio y extraer la curva fuerza–desplazamiento y la energía absorbida.</span></p></div>
+        </div>
+      </section>
+      
+      <section class="p-section">
+        <div class="p-grid">
+          <div><span class="eyebrow" data-es="Suspensión" data-en="Suspension">Suspensión</span><h2><span data-es="Balancín y amortiguador" data-en="Rocker and damper">Balancín y amortiguador</span></h2></div>
+          <div class="p-body"><p><span data-es="Como parte del departamento de Dinámica, participé en el diseño del balancín y del amortiguador del sistema de suspensión. El balancín transmite el movimiento de la rueda al conjunto muelle-amortiguador, por lo que su geometría condiciona la rigidez efectiva y la respuesta de la suspensión. El trabajo combinó el modelado de las piezas en SolidWorks y su análisis estructural por elementos finitos con el modelado multicuerpo del sistema en Adams Car. Participé, además, en la optimización del comportamiento dinámico del vehículo." data-en="As part of the Dynamics department, I took part in the design of the rocker and the damper of the suspension system. The rocker transmits the wheel motion to the spring-damper unit, so its geometry determines the effective stiffness and the response of the suspension. The work combined modelling the parts in SolidWorks and their structural finite element analysis with multibody modelling of the system in Adams Car. I also took part in the optimisation of the vehicle’s dynamic behaviour.">Como parte del departamento de Dinámica, participé en el diseño del balancín y del amortiguador del sistema de suspensión. El balancín transmite el movimiento de la rueda al conjunto muelle-amortiguador, por lo que su geometría condiciona la rigidez efectiva y la respuesta de la suspensión. El trabajo combinó el modelado de las piezas en SolidWorks y su análisis estructural por elementos finitos con el modelado multicuerpo del sistema en Adams Car. Participé, además, en la optimización del comportamiento dinámico del vehículo.</span></p></div>
+        </div>
+      </section>
+      
+      <section class="p-section">
+        <div class="p-grid">
+          <div><span class="eyebrow" data-es="Aportación" data-en="Takeaway">Aportación</span><h2><span data-es="Qué aportó este trabajo" data-en="What this work contributed">Qué aportó este trabajo</span></h2></div>
+          <div class="p-body"><p><span data-es="Primer contacto con un flujo completo de ingeniería bajo requisitos normativos (requisitos, geometría, simulación y verificación) y con las limitaciones de los modelos de dinámica explícita." data-en="First contact with a complete engineering workflow under regulatory requirements (requirements, geometry, simulation and verification) and with the limitations of explicit dynamics models.">Primer contacto con un flujo completo de ingeniería bajo requisitos normativos (requisitos, geometría, simulación y verificación) y con las limitaciones de los modelos de dinámica explícita.</span></p></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container footer-row">
+      <span>© <span id="year"></span> Jaime Prieto Gómez</span>
+      <span data-es="Diseñado para mostrar el proceso, no solo el resultado." data-en="Built to show the process, not just the result.">Diseñado para mostrar el proceso, no solo el resultado.</span>
+    </div>
+  </footer>
+
+  <script>
+    const languageToggle = document.getElementById("language-toggle");
+    const translatable = document.querySelectorAll("[data-es][data-en]");
+    const titles = {
+      es: "Atenuador de impactos y suspensión en Formula Student — Jaime Prieto Gómez",
+      en: "Impact attenuator and suspension in Formula Student — Jaime Prieto Gómez"
+    };
+    function applyLanguage(lang) {
+      document.documentElement.lang = lang;
+      document.title = titles[lang];
+      translatable.forEach((el) => { el.innerHTML = el.dataset[lang]; });
+      languageToggle.textContent = lang === "es" ? "ES / EN" : "EN / ES";
+      try { localStorage.setItem("lang", lang); } catch (e) {}
+    }
+    let currentLanguage = "es";
+    try { currentLanguage = localStorage.getItem("lang") === "en" ? "en" : "es"; } catch (e) {}
+    if (currentLanguage === "en") applyLanguage("en");
+    languageToggle.addEventListener("click", () => {
+      currentLanguage = currentLanguage === "es" ? "en" : "es";
+      applyLanguage(currentLanguage);
+    });
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

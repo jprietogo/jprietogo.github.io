@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="TFM: predicción del ruido radiado al agua por la hélice de un buque mediante modelado hidrodinámico y acústico con OpenFOAM y Python.">
+  <title>Predicción del ruido radiado por una hélice — Jaime Prieto Gómez</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111c2d;
+      --panel-light: #172438;
+      --text: #f1f5f9;
+      --muted: #a9b7c9;
+      --line: #2b3a4f;
+      --accent: #a3e635;
+      --max-width: 1160px;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+    .container { width: min(var(--max-width), calc(100% - 48px)); margin-inline: auto; }
+    .eyebrow, .micro, .project-number, .nav-links, .brand small {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .eyebrow { color: var(--accent); font-size: .76rem; font-weight: 700; }
+    .muted { color: var(--muted); }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(11, 18, 32, .92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(148, 163, 184, .15);
+    }
+    .nav {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand { display: flex; align-items: center; font-weight: 750; letter-spacing: -.025em; }
+    .brand-name { display: block; font-size: 1rem; }
+    .brand small { display: block; margin-top: 1px; color: var(--muted); font-size: .62rem; font-weight: 500; letter-spacing: .08em; }
+    .nav-right { display: flex; align-items: center; gap: 30px; }
+    .nav-links { display: flex; gap: 26px; color: var(--muted); font-size: .72rem; }
+    .nav-links a:hover, .footer-links a:hover { color: var(--accent); }
+    .language {
+      border: 1px solid var(--line);
+      background: transparent; color: var(--text);
+      padding: 8px 10px; border-radius: 7px;
+      font: 700 .72rem "SFMono-Regular", Consolas, monospace;
+      cursor: pointer;
+    }
+
+    .hero { padding: 92px 0 88px; }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.02fr .98fr;
+      align-items: center;
+      gap: clamp(42px, 7vw, 92px);
+    }
+    h1 {
+      margin: 18px 0 20px;
+      font-size: clamp(2.8rem, 5.2vw, 5rem);
+      line-height: 1.03;
+      letter-spacing: -.055em;
+      max-width: 680px;
+    }
+    h1 span { color: var(--accent); }
+    .hero-keywords{margin:0 0 1.1rem;color:var(--accent);font-size:clamp(.9rem,1.4vw,1.05rem);font-weight:600;letter-spacing:.035em}
+    .hero-description { max-width: 570px; color: var(--muted); font-size: 1.04rem; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 46px; padding: 0 18px;
+      border-radius: 8px; font-size: .88rem; font-weight: 750;
+      border: 1px solid transparent; transition: transform .2s, background .2s, border-color .2s;
+    }
+    .button:hover { transform: translateY(-2px); }
+    .button-primary { background: var(--accent); color: #101827; }
+    .button-primary:hover { background: #b8f45a; }
+    .button-secondary { border-color: var(--line); color: var(--text); }
+    .button-secondary:hover { border-color: var(--muted); }
+
+    .visual-frame {
+      position: relative;
+      overflow: hidden;
+      min-height: 390px;
+      display: grid; place-items: center;
+      border: 1px solid #27374c;
+      border-radius: 18px;
+      background:
+        radial-gradient(ellipse at 54% 48%, rgba(42, 66, 91, .42), transparent 58%),
+        linear-gradient(145deg, #101b2c, #0b1220 72%);
+    }
+    .visual-frame::before {
+      content: ""; position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(148,163,184,.055) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(148,163,184,.055) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(to bottom, black, transparent 90%);
+      pointer-events: none;
+    }
+    .visual-label {
+      position: absolute; top: 18px; left: 20px;
+      color: var(--accent); font: 700 .68rem "SFMono-Regular", Consolas, monospace;
+      letter-spacing: .09em;
+    }
+    .visual-index {
+      position: absolute; top: 18px; right: 20px;
+      color: #8192a8; font: .68rem "SFMono-Regular", Consolas, monospace;
+    }
+    .visual-caption {
+      position: absolute; bottom: 18px; left: 20px; right: 20px;
+      display: flex; justify-content: space-between; gap: 16px;
+      color: #a9b7c9; font: .64rem "SFMono-Regular", Consolas, monospace;
+      letter-spacing: .05em; text-transform: uppercase;
+    }
+    .visual-caption span:last-child { color: var(--accent); }
+    .flow-art { position: relative; z-index: 1; width: 100%; max-width: 620px; padding: 28px 12px; }
+
+    section { scroll-margin-top: 90px; }
+    .section-heading {
+      display: flex; align-items: end; justify-content: space-between; gap: 24px;
+      margin-bottom: 28px;
+    }
+    h2 { margin: 8px 0 0; font-size: clamp(1.8rem, 3vw, 2.6rem); line-height: 1.15; letter-spacing: -.04em; }
+    .section-intro { color: var(--muted); max-width: 420px; margin: 0; font-size: .93rem; }
+    .projects { padding: 22px 0 100px; }
+    .project-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .project-card {
+      min-height: 270px; display: flex; flex-direction: column;
+      padding: 24px; border: 1px solid var(--line); border-radius: var(--radius);
+      background: linear-gradient(150deg, rgba(23,36,56,.82), rgba(17,28,45,.5));
+      transition: transform .2s, border-color .2s;
+    }
+    .project-card:hover { transform: translateY(-4px); border-color: #64748b; }
+    .project-top { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+    .project-number { color: var(--accent); font-size: .7rem; }
+    .project-tag { color: var(--muted); font: .65rem "SFMono-Regular", Consolas, monospace; text-align: right; }
+    .project-card h3 { margin: 34px 0 10px; font-size: 1.32rem; letter-spacing: -.025em; }
+    .project-card p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .project-bottom { margin-top: auto; padding-top: 26px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .tools { color: #d3dce8; font: .68rem "SFMono-Regular", Consolas, monospace; }
+    .arrow { color: var(--accent); font-size: 1.15rem; }
+
+    .about { padding: 0 0 100px; }
+    .about-panel {
+      display: grid; grid-template-columns: .75fr 1.25fr; gap: 52px;
+      padding: clamp(26px, 5vw, 52px); border-radius: 18px;
+      border: 1px solid var(--line); background: #0e1828;
+    }
+    .about-panel h2 { max-width: 300px; }
+    .about-copy { color: var(--muted); max-width: 650px; }
+    .about-copy p:first-child { margin-top: 0; }
+    .about-copy p:last-child { margin-bottom: 0; }
+    .about-details {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+      margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--line);
+    }
+    .about-detail { display: flex; flex-direction: column; gap: 5px; }
+    .about-detail .micro {
+      color: var(--accent); font-size: .65rem; font-weight: 700;
+      letter-spacing: .08em; margin-bottom: 3px;
+    }
+    .about-detail strong { color: var(--text); font-size: .84rem; font-weight: 650; }
+    .about-detail span:last-child { color: var(--muted); font-size: .78rem; }
+    .contact { padding: 0 0 74px; }
+    .contact-inner {
+      display: flex; justify-content: space-between; align-items: center; gap: 24px;
+      padding: 28px 0; border-top: 1px solid var(--line);
+    }
+    .contact-inner h2 { font-size: clamp(1.45rem, 2.8vw, 2rem); max-width: 560px; }
+    .contact-description { color: var(--muted); margin: 10px 0 0; max-width: 580px; }
+    .contact-copy { flex: 1; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 22px; color: var(--muted); font-size: .84rem; }
+    footer { border-top: 1px solid rgba(148,163,184,.13); padding: 20px 0 28px; color: #8192a8; font-size: .75rem; }
+    .footer-row { display: flex; justify-content: space-between; gap: 16px; }
+
+    @media (max-width: 850px) {
+      .nav-links { gap: 15px; }
+      .hero { padding-top: 66px; }
+      .hero-grid { grid-template-columns: 1fr; gap: 38px; }
+      .visual-frame { min-height: 340px; }
+      .project-grid { grid-template-columns: 1fr; }
+      .project-card { min-height: 230px; }
+      .project-card h3 { margin-top: 24px; }
+      .about-panel { grid-template-columns: 1fr; gap: 20px; }
+      .about-details { grid-template-columns: 1fr; gap: 18px; }
+    }
+    @media (max-width: 560px) {
+      .container { width: min(100% - 32px, var(--max-width)); }
+      .nav { min-height: 68px; }
+      .nav-right { gap: 12px; }
+      .nav-links { gap: 12px; font-size: .62rem; }
+      .nav-links a:nth-child(2) { display: none; }
+      .brand-name { font-size: .9rem; }
+      .hero { padding: 56px 0 64px; }
+      h1 { font-size: clamp(2.6rem, 12vw, 4rem); }
+      .hero-description { font-size: .96rem; }
+      .visual-frame { min-height: 270px; }
+      .section-heading { align-items: start; flex-direction: column; }
+      .projects { padding-bottom: 72px; }
+      .about { padding-bottom: 72px; }
+      .contact-inner { align-items: start; flex-direction: column; }
+      .footer-row { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  
+    /* ===== Página de proyecto ===== */
+    .back-link { color: var(--muted); font: .72rem "SFMono-Regular", Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+    .back-link:hover { color: var(--accent); }
+    .p-hero { padding: 72px 0 36px; }
+    .p-hero h1 span { color: inherit; }
+    .p-hero h1 { font-size: clamp(2rem, 4.2vw, 3.4rem); max-width: 900px; margin: 14px 0 12px; }
+    .p-subtitle { color: var(--accent); font-weight: 600; font-size: clamp(.95rem, 1.5vw, 1.1rem); margin: 0 0 18px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; padding: 0; list-style: none; }
+    .chips li { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; color: #d3dce8; font: .7rem "SFMono-Regular", Consolas, monospace; }
+    .p-summary { color: var(--muted); max-width: 720px; font-size: 1.04rem; margin: 0; }
+    .p-section { padding: 34px 0; border-top: 1px solid var(--line); }
+    .p-section:first-of-type { border-top: 0; }
+    .p-grid { display: grid; grid-template-columns: .55fr 1.45fr; gap: clamp(24px, 5vw, 64px); }
+    .p-section h2 { font-size: clamp(1.4rem, 2.4vw, 1.9rem); margin: 8px 0 0; }
+    .p-body { color: var(--muted); max-width: 760px; }
+    .p-body p { margin: 0 0 14px; }
+    .p-body p:last-child { margin-bottom: 0; }
+    .p-body h3 { color: var(--text); font-size: 1.05rem; letter-spacing: -.02em; margin: 30px 0 10px; }
+    .p-body h3:first-child { margin-top: 0; }
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0 6px; font-size: .9rem; }
+    .data-table th, .data-table td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+    .data-table th { color: var(--accent); font: 700 .66rem "SFMono-Regular", Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+    .data-table td:first-child { color: var(--text); }
+    .table-wrap { overflow-x: auto; }
+    .table-note { color: #8192a8; font-size: .78rem; margin: 6px 0 0; }
+    .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0 0; padding: 0; list-style: none; counter-reset: step; }
+    .steps li { counter-increment: step; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(150deg, rgba(23,36,56,.82), rgba(17,28,45,.5)); }
+    .steps li::before { content: "0" counter(step); display: block; color: var(--accent); font: 700 .7rem "SFMono-Regular", Consolas, monospace; letter-spacing: .08em; margin-bottom: 8px; }
+    .steps strong { display: block; color: var(--text); margin-bottom: 6px; }
+    .steps span { font-size: .9rem; }
+    .figure-placeholder { margin: 22px 0 0; min-height: 180px; display: grid; place-items: center; text-align: center; padding: 18px; border: 1px dashed #3b4d66; border-radius: var(--radius); color: #8192a8; font: .72rem "SFMono-Regular", Consolas, monospace; letter-spacing: .05em; }
+    .check-note { margin: 14px 0 0; padding: 12px 14px; border: 1px dashed #b45309; border-radius: 10px; color: #fbbf24; font-size: .8rem; }
+    .plain-list { margin: 0; padding-left: 20px; }
+    .plain-list li { margin-bottom: 8px; }
+    .plain-list li:last-child { margin-bottom: 0; }
+    .link-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+    @media (max-width: 850px) {
+      .p-grid { grid-template-columns: 1fr; gap: 8px; }
+      .steps { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .p-hero { padding-top: 48px; }
+      .data-table { font-size: .82rem; }
+      .data-table th, .data-table td { padding: 8px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand" href="index.html" aria-label="Jaime Prieto Gómez, inicio">
+        <span class="brand-name">Jaime Prieto Gómez<small data-es="CFD · SIMULACIÓN" data-en="CFD · SIMULATION">CFD · SIMULACIÓN</small></span>
+      </a>
+      <div class="nav-right">
+        <nav class="nav-links" aria-label="Navegación principal">
+          <a href="index.html#projects" data-es="Proyectos" data-en="Projects">Proyectos</a>
+          <a href="index.html#about" data-es="Perfil" data-en="Profile">Perfil</a>
+          <a href="index.html#contact" data-es="Contacto" data-en="Contact">Contacto</a>
+        </nav>
+        <button class="language" id="language-toggle" type="button" aria-label="Cambiar idioma">ES / EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="p-hero">
+      <div class="container">
+        <a class="back-link" href="index.html#projects"><span data-es="← Volver a proyectos" data-en="← Back to projects">← Volver a proyectos</span></a>
+        <div style="margin-top:28px"><span class="eyebrow">TFM · 2026</span></div>
+        <h1><span data-es="Predicción del ruido radiado al agua por la hélice de un buque" data-en="Prediction of underwater radiated noise from a ship propeller">Predicción del ruido radiado al agua por la hélice de un buque</span></h1>
+        <p class="p-subtitle"><span data-es="Modelado hidrodinámico y acústico con OpenFOAM y Python" data-en="Hydrodynamic and acoustic modelling with OpenFOAM and Python">Modelado hidrodinámico y acústico con OpenFOAM y Python</span></p>
+        <ul class="chips"><li>OpenFOAM</li><li>Python</li><li>FW-H</li><li>HPC</li></ul>
+        <p class="p-summary"><span data-es="Metodología numérica para estimar el ruido que radia al agua la hélice de un petrolero a escala real, combinando CFD en OpenFOAM con la analogía acústica de Ffowcs Williams–Hawkings." data-en="Numerical methodology to estimate the noise radiated into the water by the propeller of a full-scale oil tanker, combining CFD in OpenFOAM with the Ffowcs Williams–Hawkings acoustic analogy.">Metodología numérica para estimar el ruido que radia al agua la hélice de un petrolero a escala real, combinando CFD en OpenFOAM con la analogía acústica de Ffowcs Williams–Hawkings.</span></p>
+        <div class="hero-actions"><a class="button button-primary" href="https://github.com/jprietogo/tfm-scripts" target="_blank" rel="noopener"><span data-es="Ver código en GitHub ↗" data-en="View code on GitHub ↗">Ver código en GitHub ↗</span></a></div>
+      </div>
+    </section>
+
+    <div class="container">
+      
+      <section class="p-section">
+        <div class="p-grid">
+          <div><span class="eyebrow" data-es="Contexto" data-en="Context">Contexto</span><h2><span data-es="Por qué importa" data-en="Why it matters">Por qué importa</span></h2></div>
+          <div class="p-body"><p><span data-es="El ruido submarino de origen humano preocupa por su efecto en la fauna marina, y el transporte marítimo es una de sus principales fuentes. En un buque en navegación, la hélice es la fuente dominante. Las directrices de la OMI de 2023, de carácter no vinculante, recomiendan reducirlo, y disponer de herramientas numéricas que permitan predecirlo en fase de diseño evita campañas de medida costosas." data-en="Anthropogenic underwater noise is a concern because of its impact on marine life, and shipping is one of its main sources. On a ship under way, the propeller is the dominant source. The IMO’s 2023 guidelines, which are non-binding, recommend reducing it, and having numerical tools that can predict it at the design stage avoids costly measurement campaigns.">El ruido submarino de origen humano preocupa por su efecto en la fauna marina, y el transporte marítimo es una de sus principales fuentes. En un buque en navegación, la hélice es la fuente dominante. Las directrices de la OMI de 2023, de carácter no vinculante, recomiendan reducirlo, y disponer de herramientas numéricas que permitan predecirlo en fase de diseño evita campañas de medida costosas.</span></p></div>
+        </div>
+      </section>
+      
+      <section class="p-section">
+        <div class="p-grid">
+          <div><span class="eyebrow" data-es="Caso de estudio" data-en="Case study">Caso de estudio</span><h2><span data-es="El buque y la hélice" data-en="The ship and the propeller">El buque y la hélice</span></h2></div>
+          <div class="p-body"><p><span data-es="Petrolero de grandes dimensiones con una única hélice de paso fijo. La geometría completa del buque es confidencial, por lo que no se muestra." data-en="Large oil tanker with a single fixed-pitch propeller. The full ship geometry is confidential and is therefore not shown.">Petrolero de grandes dimensiones con una única hélice de paso fijo. La geometría completa del buque es confidencial, por lo que no se muestra.</span></p><div class="table-wrap"><table class="data-table"><tbody><tr><td><span data-es="Eslora entre perpendiculares" data-en="Length between perpendiculars">Eslora entre perpendiculares</span></td><td><span data-es="~275 m" data-en="~275 m">~275 m</span></td></tr><tr><td><span data-es="Velocidad de servicio" data-en="Service speed">Velocidad de servicio</span></td><td><span data-es="~7,5 m/s" data-en="~7.5 m/s">~7,5 m/s</span></td></tr><tr><td><span data-es="Número de Reynolds" data-en="Reynolds number">Número de Reynolds</span></td><td><span data-es="~1,7 × 10⁹" data-en="~1.7 × 10⁹">~1,7 × 10⁹</span></td></tr><tr><td><span data-es="Hélice" data-en="Propeller">Hélice</span></td><td><span data-es="4 palas, D ~9 m" data-en="4 blades, D ~9 m">4 palas, D ~9 m</span></td></tr><tr><td><span data-es="Velocidad de giro" data-en="Rotation speed">Velocidad de giro</span></td><td><span data-es="~70 rpm" data-en="~70 rpm">~70 rpm</span></td></tr><tr><td><span data-es="Frecuencia de paso de pala (BPF)" data-en="Blade passing frequency (BPF)">Frecuencia de paso de pala (BPF)</span></td><td><span data-es="~4,7 Hz" data-en="~4.7 Hz">~4,7 Hz</span></td></tr></tbody></table></div></div>
+        </div>
+      </section>
+      
+      <section class="p-section">
+        <div class="p-grid">
+          <div><span class="eyebrow" data-es="Metodología" data-en="Methodology">Metodología</span><h2><span data-es="Cómo se ha hecho" data-en="How it was done">Cómo se ha hecho</span></h2></div>
+          <div class="p-body"><p><span data-es="Una estrategia desacoplada en cuatro pasos, con OpenFOAM Foundation 13 y Python:" data-en="A decoupled strategy in four steps, using OpenFOAM Foundation 13 and Python:">Una estrategia desacoplada en cuatro pasos, con OpenFOAM Foundation 13 y Python:</span></p><ol class="steps"><li><strong><span data-es="Casco aislado" data-en="Isolated hull">Casco aislado</span></strong><span data-es="Simulación del flujo alrededor del volumen sumergido con pimpleFoam (monofásico, sin superficie libre) y modelo k-ω SST con funciones de pared. De ella se extrae la estela nominal en el plano de la hélice." data-en="Flow simulation around the submerged volume with pimpleFoam (single-phase, no free surface) and the k-ω SST model with wall functions. The nominal wake in the propeller plane is extracted from it.">Simulación del flujo alrededor del volumen sumergido con pimpleFoam (monofásico, sin superficie libre) y modelo k-ω SST con funciones de pared. De ella se extrae la estela nominal en el plano de la hélice.</span></li><li><strong><span data-es="Hélice en rotación" data-en="Rotating propeller">Hélice en rotación</span></strong><span data-es="Simulación RANS en un dominio rotante, pensada para recibir esa estela como condición de entrada. Los resultados presentados corresponden a entrada uniforme (ver Resultados)." data-en="RANS simulation in a rotating domain, designed to receive that wake as the inlet condition. The results shown correspond to uniform inflow (see Results).">Simulación RANS en un dominio rotante, pensada para recibir esa estela como condición de entrada. Los resultados presentados corresponden a entrada uniforme (ver Resultados).</span></li><li><strong><span data-es="Acústica" data-en="Acoustics">Acústica</span></strong><span data-es="Script en Python que implementa la formulación impermeable de Farassat 1A (analogía FW-H) para calcular la presión acústica en campo lejano y el nivel de presión sonora (SPL) en 16 receptores." data-en="Python script implementing the impermeable Farassat 1A formulation (FW-H analogy) to compute the far-field acoustic pressure and the sound pressure level (SPL) at 16 receivers.">Script en Python que implementa la formulación impermeable de Farassat 1A (analogía FW-H) para calcular la presión acústica en campo lejano y el nivel de presión sonora (SPL) en 16 receptores.</span></li><li><strong><span data-es="Validación" data-en="Validation">Validación</span></strong><span data-es="Barrido del número de Reynolds sobre la geometría real del casco, comparando RANS y LES sobre la misma malla, para comprobar que los esquemas numéricos y el modelado turbulento responden de forma coherente." data-en="Reynolds-number sweep over the real hull geometry, comparing RANS and LES on the same mesh, to check that the numerical schemes and turbulence modelling respond consistently.">Barrido del número de Reynolds sobre la geometría real del casco, comparando RANS y LES sobre la misma malla, para comprobar que los esquemas numéricos y el modelado turbulento responden de forma coherente.</span></li></ol><div class="figure-placeholder" role="img" aria-label="flujo de trabajo de la metodología"><span data-es="Figura pendiente · flujo de trabajo de la metodología" data-en="Figure pending · methodology workflow">Figura pendiente · flujo de trabajo de la metodología</span></div><p style="margin-top:18px"><span data-es="Las simulaciones se ejecutaron en el superordenador FinisTerrae III (CESGA): unas 50 h con 64 procesos para el casco y unas 60 h con 16 procesos para la hélice." data-en="The simulations were run on the FinisTerrae III supercomputer (CESGA): about 50 h on 64 processes for the hull and about 60 h on 16 processes for the propeller.">Las simulaciones se ejecutaron en el superordenador FinisTerrae III (CESGA): unas 50 h con 64 procesos para el casco y unas 60 h con 16 procesos para la hélice.</span></p></div>
+        </div>
+      </section>
+      
+      <section class="p-section">
+        <div class="p-grid">
+          <div><span class="eyebrow" data-es="Resultados" data-en="Results">Resultados</span><h2><span data-es="Qué se obtuvo" data-en="What was obtained">Qué se obtuvo</span></h2></div>
+          <div class="p-body"><h3><span data-es="Validación numérica: barrido de Reynolds" data-en="Numerical validation: Reynolds sweep">Validación numérica: barrido de Reynolds</span></h3><p><span data-es="Se simuló el casco para Re entre 500 y 50 000, con la misma malla y los mismos esquemas numéricos, variando solo la viscosidad. A Re bajo, RANS y LES dan resultados casi idénticos. A partir de Re = 20 000, LES resuelve una estela turbulenta con estructuras que RANS no captura, y RANS no reproduce la transición laminar-turbulenta. LES es, por tanto, más fiel, pero inviable a Re ≈ 1,7 × 10⁹, lo que justifica usar RANS con funciones de pared (y⁺ ≈ 300) en el caso real. Al no disponer de datos experimentales propios, esta validación comprueba la coherencia numérica del método, no su precisión frente a medidas." data-en="The hull was simulated for Re between 500 and 50,000, with the same mesh and numerical schemes, changing only the viscosity. At low Re, RANS and LES give almost identical results. From Re = 20,000 onwards, LES resolves a turbulent wake with structures that RANS does not capture, and RANS does not reproduce the laminar-turbulent transition. LES is therefore more faithful, but unfeasible at Re ≈ 1.7 × 10⁹, which justifies using RANS with wall functions (y⁺ ≈ 300) in the real case. Since no experimental data of my own were available, this validation checks the numerical consistency of the method, not its accuracy against measurements.">Se simuló el casco para Re entre 500 y 50 000, con la misma malla y los mismos esquemas numéricos, variando solo la viscosidad. A Re bajo, RANS y LES dan resultados casi idénticos. A partir de Re = 20 000, LES resuelve una estela turbulenta con estructuras que RANS no captura, y RANS no reproduce la transición laminar-turbulenta. LES es, por tanto, más fiel, pero inviable a Re ≈ 1,7 × 10⁹, lo que justifica usar RANS con funciones de pared (y⁺ ≈ 300) en el caso real. Al no disponer de datos experimentales propios, esta validación comprueba la coherencia numérica del método, no su precisión frente a medidas.</span></p><div class="figure-placeholder" role="img" aria-label="barrido de Reynolds, RANS frente a LES"><span data-es="Figura pendiente · barrido de Reynolds, RANS frente a LES" data-en="Figure pending · Reynolds sweep, RANS vs LES">Figura pendiente · barrido de Reynolds, RANS frente a LES</span></div><h3><span data-es="Estela del casco" data-en="Hull wake">Estela del casco</span></h3><p><span data-es="El campo de estela en el plano de la hélice es marcadamente no uniforme, concentrado en torno a la línea de quilla y la bocina. La fracción de estela media en el radio de mayor carga es w = 0,3727, dentro del rango típico para petroleros (0,25–0,4). Su distribución resulta más concentrada que la media luna característica, algo que se atribuye a la resolución de malla con funciones de pared, así que las cargas no estacionarias sobre la hélice y los armónicos de la BPF podrían estar parcialmente subestimados." data-en="The wake field in the propeller plane is markedly non-uniform, concentrated around the keel line and the stern tube. The mean wake fraction at the radius of highest hydrodynamic load is w = 0.3727, within the typical range for tankers (0.25–0.4). Its distribution is more concentrated than the characteristic crescent shape, which is attributed to the mesh resolution used with wall functions, so the unsteady loads on the propeller and the BPF harmonics may be partly underestimated.">El campo de estela en el plano de la hélice es marcadamente no uniforme, concentrado en torno a la línea de quilla y la bocina. La fracción de estela media en el radio de mayor carga es w = 0,3727, dentro del rango típico para petroleros (0,25–0,4). Su distribución resulta más concentrada que la media luna característica, algo que se atribuye a la resolución de malla con funciones de pared, así que las cargas no estacionarias sobre la hélice y los armónicos de la BPF podrían estar parcialmente subestimados.</span></p><div class="figure-placeholder" role="img" aria-label="campo de velocidad en el plano de la hélice"><span data-es="Figura pendiente · campo de velocidad en el plano de la hélice" data-en="Figure pending · velocity field in the propeller plane">Figura pendiente · campo de velocidad en el plano de la hélice</span></div><h3><span data-es="Hélice" data-en="Propeller">Hélice</span></h3><p><span data-es="La simulación con la estela turbulenta del casco como entrada no convergió: se obtuvo un empuje de signo opuesto al esperado y residuos crecientes. Tras descartar errores de configuración (geometría, sentido de giro, sistema de referencia), el problema se atribuyó a la interfaz rotor-estator (NCC) ante los fuertes gradientes de velocidad. Por ello, los resultados de la hélice y de la acústica corresponden a entrada uniforme." data-en="The simulation with the turbulent hull wake as inlet did not converge: the thrust had the opposite sign to the expected one and the residuals grew. After ruling out configuration errors (geometry, rotation direction, reference frame), the problem was attributed to the rotor-stator interface (NCC) under strong velocity gradients. For this reason, the propeller and acoustic results correspond to uniform inflow.">La simulación con la estela turbulenta del casco como entrada no convergió: se obtuvo un empuje de signo opuesto al esperado y residuos crecientes. Tras descartar errores de configuración (geometría, sentido de giro, sistema de referencia), el problema se atribuyó a la interfaz rotor-estator (NCC) ante los fuertes gradientes de velocidad. Por ello, los resultados de la hélice y de la acústica corresponden a entrada uniforme.</span></p><div class="table-wrap"><table class="data-table"><thead><tr><th><span data-es="Coeficiente" data-en="Coefficient">Coeficiente</span></th><th><span data-es="Simulado" data-en="Simulated">Simulado</span></th><th><span data-es="Wageningen B" data-en="Wageningen B">Wageningen B</span></th><th><span data-es="Desviación" data-en="Deviation">Desviación</span></th></tr></thead><tbody><tr><td><span data-es="K&lt;sub&gt;T&lt;/sub&gt;" data-en="K&lt;sub&gt;T&lt;/sub&gt;">K<sub>T</sub></span></td><td><span data-es="0,086" data-en="0.086">0,086</span></td><td><span data-es="0,1067" data-en="0.1067">0,1067</span></td><td><span data-es="19,4 %" data-en="19.4%">19,4 %</span></td></tr><tr><td><span data-es="K&lt;sub&gt;Q&lt;/sub&gt;" data-en="K&lt;sub&gt;Q&lt;/sub&gt;">K<sub>Q</sub></span></td><td><span data-es="0,014" data-en="0.014">0,014</span></td><td><span data-es="0,01343" data-en="0.01343">0,01343</span></td><td><span data-es="4,2 %" data-en="4.2%">4,2 %</span></td></tr><tr><td><span data-es="η&lt;sub&gt;0&lt;/sub&gt;" data-en="η&lt;sub&gt;0&lt;/sub&gt;">η<sub>0</sub></span></td><td><span data-es="0,430" data-en="0.430">0,430</span></td><td><span data-es="0,556" data-en="0.556">0,556</span></td><td><span data-es="22,6 %" data-en="22.6%">22,6 %</span></td></tr></tbody></table></div><p class="table-note"><span data-es="Punto de diseño J = 0,44, frente a la serie Wageningen B (P/D = 0,6). Desviación = |referencia − simulado| / referencia." data-en="Design point J = 0.44, compared with the Wageningen B series (P/D = 0.6). Deviation = |reference − simulated| / reference.">Punto de diseño J = 0,44, frente a la serie Wageningen B (P/D = 0,6). Desviación = |referencia − simulado| / referencia.</span></p><p><span data-es="K&lt;sub&gt;Q&lt;/sub&gt; se ajusta bien (4,2 %), mientras que K&lt;sub&gt;T&lt;/sub&gt; (19,4 %) y η&lt;sub&gt;0&lt;/sub&gt; (22,6 %) superan el rango habitual en RANS para esta serie (5–10 %). Se atribuye a usar la estela nominal en lugar de la efectiva, a las limitaciones de RANS para capturar el vórtice de punta de pala y a la resolución de malla en el borde de ataque y la punta." data-en="K&lt;sub&gt;Q&lt;/sub&gt; fits well (4.2%), while K&lt;sub&gt;T&lt;/sub&gt; (19.4%) and η&lt;sub&gt;0&lt;/sub&gt; (22.6%) exceed the usual RANS range for this series (5–10%). This is attributed to using the nominal wake instead of the effective one, to the limitations of RANS in capturing the blade-tip vortex, and to the mesh resolution at the leading edge and the tip.">K<sub>Q</sub> se ajusta bien (4,2 %), mientras que K<sub>T</sub> (19,4 %) y η<sub>0</sub> (22,6 %) superan el rango habitual en RANS para esta serie (5–10 %). Se atribuye a usar la estela nominal en lugar de la efectiva, a las limitaciones de RANS para capturar el vórtice de punta de pala y a la resolución de malla en el borde de ataque y la punta.</span></p><div class="figure-placeholder" role="img" aria-label="malla y campo de presión en las palas"><span data-es="Figura pendiente · malla y campo de presión en las palas" data-en="Figure pending · mesh and pressure field on the blades">Figura pendiente · malla y campo de presión en las palas</span></div><h3><span data-es="Acústica" data-en="Acoustics">Acústica</span></h3><p><span data-es="Con la formulación de Farassat 1A se calculó la presión acústica en 16 receptores: cuatro sobre el eje longitudinal y doce en una corona de radio igual a la eslora (≈ 275 m), cada 30°. La señal p′(t) muestra un transitorio inicial seguido de un régimen cuasi-periódico, pero con un valor medio no nulo (del orden de 200 Pa) que no es coherente con una presión acústica pura. Puede deberse a una componente hidrodinámica o de campo cercano en la señal y a la limitada calidad de RANS como entrada para el cálculo." data-en="With the Farassat 1A formulation, the acoustic pressure was computed at 16 receivers: four on the longitudinal axis and twelve on a ring with a radius equal to the ship’s length (≈ 275 m), every 30°. The p′(t) signal shows an initial transient followed by a quasi-periodic regime, but with a non-zero mean value (of the order of 200 Pa) that is not consistent with a pure acoustic pressure. It may be due to a hydrodynamic or near-field component in the signal and to the limited quality of RANS as input for the calculation.">Con la formulación de Farassat 1A se calculó la presión acústica en 16 receptores: cuatro sobre el eje longitudinal y doce en una corona de radio igual a la eslora (≈ 275 m), cada 30°. La señal p′(t) muestra un transitorio inicial seguido de un régimen cuasi-periódico, pero con un valor medio no nulo (del orden de 200 Pa) que no es coherente con una presión acústica pura. Puede deberse a una componente hidrodinámica o de campo cercano en la señal y a la limitada calidad de RANS como entrada para el cálculo.</span></p><p><span data-es="El SPL a la BPF (4,72 Hz) es de 99,08–99,14 dB re 1 µPa en los 12 receptores de la corona: un patrón axisimétrico que coincide con la teoría de Gutin para una hélice con entrada uniforme. Es una comprobación de la consistencia del postproceso, no una predicción del ruido del buque en condiciones reales." data-en="The SPL at the BPF (4.72 Hz) is 99.08–99.14 dB re 1 µPa at the 12 receivers of the ring: an axisymmetric pattern that matches Gutin’s theory for a propeller with uniform inflow. It is a check of the post-processing consistency, not a prediction of the ship’s noise under real conditions.">El SPL a la BPF (4,72 Hz) es de 99,08–99,14 dB re 1 µPa en los 12 receptores de la corona: un patrón axisimétrico que coincide con la teoría de Gutin para una hélice con entrada uniforme. Es una comprobación de la consistencia del postproceso, no una predicción del ruido del buque en condiciones reales.</span></p><div class="figure-placeholder" role="img" aria-label="señal p′(t) y diagrama polar de directividad"><span data-es="Figura pendiente · señal p′(t) y diagrama polar de directividad" data-en="Figure pending · p′(t) signal and polar directivity diagram">Figura pendiente · señal p′(t) y diagrama polar de directividad</span></div></div>
+        </div>
+      </section>
+      
+      <section class="p-section">
+        <div class="p-grid">
+          <div><span class="eyebrow" data-es="Alcance" data-en="Scope">Alcance</span><h2><span data-es="Limitaciones y trabajo futuro" data-en="Limitations and future work">Limitaciones y trabajo futuro</span></h2></div>
+          <div class="p-body"><ul class="plain-list"><li><span data-es="El caso con la estela turbulenta del casco no convergió, por lo que los resultados corresponden a entrada uniforme y a la estela nominal, no a la efectiva." data-en="The case with the turbulent hull wake did not converge, so the results correspond to uniform inflow and the nominal wake, not the effective one.">El caso con la estela turbulenta del casco no convergió, por lo que los resultados corresponden a entrada uniforme y a la estela nominal, no a la efectiva.</span></li><li><span data-es="La señal acústica tiene un valor medio no nulo, no se modela la superficie libre ni la cavitación." data-en="The acoustic signal has a non-zero mean value, and neither the free surface nor cavitation are modelled.">La señal acústica tiene un valor medio no nulo, no se modela la superficie libre ni la cavitación.</span></li></ul><p style="margin-top:14px"><span data-es="Como trabajo futuro, resolver la convergencia en la interfaz rotor-estator (refinamiento local de malla, formulación AMI, ajuste del número de Courant y de la subrelajación) y modelar la cavitación con un solver bifásico." data-en="As future work: resolving convergence at the rotor-stator interface (local mesh refinement, AMI formulation, tuning of the Courant number and under-relaxation) and modelling cavitation with a two-phase solver.">Como trabajo futuro, resolver la convergencia en la interfaz rotor-estator (refinamiento local de malla, formulación AMI, ajuste del número de Courant y de la subrelajación) y modelar la cavitación con un solver bifásico.</span></p></div>
+        </div>
+      </section>
+      
+      <section class="p-section">
+        <div class="p-grid">
+          <div><span class="eyebrow" data-es="Enlaces" data-en="Links">Enlaces</span><h2><span data-es="Código" data-en="Code">Código</span></h2></div>
+          <div class="p-body"><div class="link-row"><a class="button button-primary" href="https://github.com/jprietogo/tfm-scripts" target="_blank" rel="noopener"><span data-es="Código en GitHub ↗" data-en="Code on GitHub ↗">Código en GitHub ↗</span></a></div></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container footer-row">
+      <span>© <span id="year"></span> Jaime Prieto Gómez</span>
+      <span data-es="Diseñado para mostrar el proceso, no solo el resultado." data-en="Built to show the process, not just the result.">Diseñado para mostrar el proceso, no solo el resultado.</span>
+    </div>
+  </footer>
+
+  <script>
+    const languageToggle = document.getElementById("language-toggle");
+    const translatable = document.querySelectorAll("[data-es][data-en]");
+    const titles = {
+      es: "Predicción del ruido radiado por una hélice — Jaime Prieto Gómez",
+      en: "Propeller radiated noise prediction — Jaime Prieto Gómez"
+    };
+    function applyLanguage(lang) {
+      document.documentElement.lang = lang;
+      document.title = titles[lang];
+      translatable.forEach((el) => { el.innerHTML = el.dataset[lang]; });
+      languageToggle.textContent = lang === "es" ? "ES / EN" : "EN / ES";
+      try { localStorage.setItem("lang", lang); } catch (e) {}
+    }
+    let currentLanguage = "es";
+    try { currentLanguage = localStorage.getItem("lang") === "en" ? "en" : "es"; } catch (e) {}
+    if (currentLanguage === "en") applyLanguage("en");
+    languageToggle.addEventListener("click", () => {
+      currentLanguage = currentLanguage === "es" ? "en" : "es";
+      applyLanguage(currentLanguage);
+    });
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
