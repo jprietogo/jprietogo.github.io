@@ -212,7 +212,7 @@
       .nav { min-height: 68px; }
       .nav-right { gap: 12px; }
       .nav-links { gap: 12px; font-size: .62rem; }
-      .nav-links a:nth-child(2) { display: none; }
+      .nav-links a:nth-child(2), .nav-links a:nth-child(3) { display: none; }
       .brand-name { font-size: .9rem; }
       .hero { padding: 56px 0 64px; }
       h1 { font-size: clamp(2.6rem, 12vw, 4rem); }
@@ -228,6 +228,20 @@
       html { scroll-behavior: auto; }
       *, *::before, *::after { transition-duration: .01ms !important; }
     }
+
+    .experience { padding: 0 0 100px; }
+    .exp-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+    .exp-item { display: grid; grid-template-columns: 200px 1fr; gap: 32px; padding: 30px 0; border-bottom: 1px solid var(--line); }
+    .exp-date { color: var(--accent); font: 700 .74rem "SFMono-Regular", Consolas, monospace; letter-spacing: .06em; padding-top: 7px; }
+    .exp-body h3 { margin: 0; font-size: 1.25rem; letter-spacing: -.02em; }
+    .exp-org { margin: 4px 0 14px; color: var(--muted); }
+    .exp-points { margin: 0; padding-left: 18px; color: var(--muted); max-width: 720px; }
+    .exp-points li { margin-bottom: 6px; }
+    .exp-tags { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 16px 0 0; }
+    .exp-tags li { border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px; color: #d3dce8; font: .68rem "SFMono-Regular", Consolas, monospace; }
+    .exp-link { display: inline-block; margin-top: 16px; color: var(--accent); font: .78rem "SFMono-Regular", Consolas, monospace; }
+    .exp-link:hover { text-decoration: underline; }
+    @media (max-width: 850px) { .exp-item { grid-template-columns: 1fr; gap: 8px; } .experience { padding-bottom: 72px; } }
   </style>
 </head>
 <body>
@@ -239,6 +253,7 @@
       <div class="nav-right">
         <nav class="nav-links" aria-label="Navegación principal">
           <a href="#projects" data-es="Proyectos" data-en="Projects">Proyectos</a>
+          <a href="#experience" data-es="Experiencia" data-en="Experience">Experiencia</a>
           <a href="#about" data-es="Perfil" data-en="Profile">Perfil</a>
           <a href="#contact" data-es="Contacto" data-en="Contact">Contacto</a>
         </nav>
@@ -345,6 +360,20 @@
             <div class="project-bottom"><span class="tools" data-es="CAD · FEM · DINÁMICA" data-en="CAD · FEM · DYNAMICS">CAD · FEM · DINÁMICA</span><span class="arrow">↗</span></div>
           </a>
         </div>
+      </div>
+    </section>
+
+    <section class="experience" id="experience">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow" data-es="Trayectoria" data-en="Career">Trayectoria</div>
+            <h2 data-es="Experiencia" data-en="Experience">Experiencia</h2>
+          </div>
+          <p class="section-intro" data-es="Simulación y diseño en consultoría, I+D y competición universitaria." data-en="Simulation and design in consulting, R&amp;D and university racing.">Simulación y diseño en consultoría, I+D y competición universitaria.</p>
+        </div>
+        <ol class="exp-list"><li class="exp-item"><div class="exp-date"><span data-es="10/2026 – Actualidad" data-en="10/2026 – Present">10/2026 – Actualidad</span></div><div class="exp-body"><h3><span data-es="Ingeniero CFD" data-en="CFD Engineer">Ingeniero CFD</span></h3><p class="exp-org">Engineering Simulation Consulting (ESC) · Madrid</p><ul class="exp-points"><li><span data-es="Preparación y actualización de modelos geométricos y mallado mediante ANSA y HyperWorks." data-en="Preparation and updating of geometric models and meshes using ANSA and HyperWorks.">Preparación y actualización de modelos geométricos y mallado mediante ANSA y HyperWorks.</span></li><li><span data-es="Participación en proyectos de simulación estructural y reología, con preparación de modelos y preprocesado y postprocesado de las simulaciones." data-en="Involvement in structural simulation and rheology projects, including model preparation and simulation pre- and post-processing.">Participación en proyectos de simulación estructural y reología, con preparación de modelos y preprocesado y postprocesado de las simulaciones.</span></li><li><span data-es="Familiarización con distintas metodologías de simulación numérica y herramientas CAE en entornos de ingeniería multidisciplinar." data-en="Exposure to different numerical simulation methodologies and CAE tools in multidisciplinary engineering environments.">Familiarización con distintas metodologías de simulación numérica y herramientas CAE en entornos de ingeniería multidisciplinar.</span></li></ul><ul class="exp-tags"><li>ANSA</li><li>HyperWorks</li></ul></div></li><li class="exp-item"><div class="exp-date"><span data-es="02/2026 – 05/2026" data-en="02/2026 – 05/2026">02/2026 – 05/2026</span></div><div class="exp-body"><h3><span data-es="Becario Ingeniero CFD · I+D" data-en="CFD Engineer Intern · R&amp;D">Becario Ingeniero CFD · I+D</span></h3><p class="exp-org">Técnicas y Servicios de Ingeniería (TSI) · Madrid</p><ul class="exp-points"><li><span data-es="Proyecto Fin de Máster: «Predicción del ruido radiado al agua por la hélice de un buque mediante modelado hidrodinámico y acústico»." data-en="Master’s thesis: “Prediction of underwater radiated noise from a ship propeller through hydrodynamic and acoustic modelling”.">Proyecto Fin de Máster: «Predicción del ruido radiado al agua por la hélice de un buque mediante modelado hidrodinámico y acústico».</span></li><li><span data-es="Simulación CFD de flujo turbulento alrededor de una hélice naval con OpenFOAM." data-en="CFD simulation of turbulent flow around a marine propeller with OpenFOAM.">Simulación CFD de flujo turbulento alrededor de una hélice naval con OpenFOAM.</span></li><li><span data-es="Integración de los resultados CFD con un modelo de propagación acústica." data-en="Coupling of the CFD results with an acoustic propagation model.">Integración de los resultados CFD con un modelo de propagación acústica.</span></li><li><span data-es="Implementación en Python de la analogía acústica de Ffowcs Williams–Hawkings (FW-H)." data-en="Python implementation of the Ffowcs Williams–Hawkings (FW-H) acoustic analogy.">Implementación en Python de la analogía acústica de Ffowcs Williams–Hawkings (FW-H).</span></li><li><span data-es="Ejecución de simulaciones en el superordenador FinisTerrae III (CESGA), con un entorno HPC Linux gestionado con Slurm." data-en="Execution of simulations on the FinisTerrae III supercomputer (CESGA), in a Linux HPC environment managed with Slurm.">Ejecución de simulaciones en el superordenador FinisTerrae III (CESGA), con un entorno HPC Linux gestionado con Slurm.</span></li></ul><ul class="exp-tags"><li>OpenFOAM</li><li>Python</li><li>FW-H</li><li>HPC</li></ul><a class="exp-link" href="proyecto-helice.html"><span data-es="Ver proyecto →" data-en="View project →">Ver proyecto →</span></a></div></li><li class="exp-item"><div class="exp-date"><span data-es="09/2021 – 09/2023" data-en="09/2021 – 09/2023">09/2021 – 09/2023</span></div><div class="exp-body"><h3><span data-es="Chasis y Dinámica" data-en="Chassis and Dynamics">Chasis y Dinámica</span></h3><p class="exp-org">UAH Motorsport (Formula Student)</p><ul class="exp-points"><li><span data-es="Diseño de componentes de la suspensión con herramientas CAD y análisis estructural por elementos finitos." data-en="Design of suspension components using CAD tools and structural finite element analysis.">Diseño de componentes de la suspensión con herramientas CAD y análisis estructural por elementos finitos.</span></li><li><span data-es="Desarrollo de la primera versión del atenuador de impactos frontal, orientado a la normativa de la competición." data-en="Development of the first version of the front impact attenuator, aimed at the competition regulations.">Desarrollo de la primera versión del atenuador de impactos frontal, orientado a la normativa de la competición.</span></li><li><span data-es="Participación en la optimización del comportamiento dinámico del vehículo." data-en="Contribution to the optimisation of the vehicle’s dynamic behaviour.">Participación en la optimización del comportamiento dinámico del vehículo.</span></li></ul><ul class="exp-tags"><li>SolidWorks</li><li>ANSYS Mechanical</li><li>Adams Car</li><li>MATLAB</li></ul><a class="exp-link" href="proyecto-formula.html"><span data-es="Ver proyecto →" data-en="View project →">Ver proyecto →</span></a></div></li>
+        </ol>
       </div>
     </section>
 
